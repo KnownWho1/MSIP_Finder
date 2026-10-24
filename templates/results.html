@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Results - MSIP Label Scanner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Scan Results</h1>
+            <a href="{{ url_for('index') }}" class="back-link">← Scan More Files</a>
+        </header>
+
+        {% if error %}
+        <div class="error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if results and results|length > 0 %}
+        <div class="summary">
+            <p>Scanned {{ results|length }} file(s)</p>
+        </div>
+
+        <div class="table-container">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Status</th>
+                        <th>Label ID(s)</th>
+                        <th>Label Name(s)</th>
+                        <th>Where it came from</th>
+                        <th>Description</th>
+                        <th>Parent Labels</th>
+                        <th>Multiple Labels</th>
+                        <th>Potential Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr class="result-row">
+                        <td>
+                            <div class="file-info">
+                                <strong>{{ result.fileName }}</strong><br>
+                                <small>{{ result.filePath }}</small>
+                                {% if result.archiveSource %}
+                                <br><small class="archive">from {{ result.archiveSource }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if result.status == 'labelled' %}
+                            <span class="badge badge-labelled">Labelled</span>
+                            {% elif result.status == 'no_label_detected' %}
+                            <span class="badge badge-none">No label detected</span>
+                            {% elif result.status == 'scan_error' %}
+                            <span class="badge badge-error">Scan error</span>
+                            {% else %}
+                            <span class="badge">{{ result.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if result.labelEntries %}
+                            {% for entry in result.labelEntries %}
+                            <div class="label-id">{{ entry.labelId or '(none)' }}</div>
+                            {% endfor %}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if result.labelEntries %}
+                            {% for entry in result.labelEntries %}
+                            <div class="label-name">{{ entry.labelName or '(none)' }}</div>
+                            {% endfor %}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if result.labelEntries %}
+                            {% for entry in result.labelEntries %}
+                            <div class="where-from">{{ entry.whereItCameFrom }}</div>
+                            {% endfor %}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if result.labelEntries %}
+                            {% for entry in result.labelEntries %}
+                            <div class="desc">{{ entry.description or '-' }}</div>
+                            {% endfor %}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if result.labelEntries %}
+                            {% for entry in result.labelEntries %}
+                            {% if entry.parentLabels and entry.parentLabels|length > 0 %}
+                            {% for p in entry.parentLabels %}
+                            <div class="parent">{{ p.labelName or p.labelId }}</div>
+                            {% endfor %}
+                            {% else %}-{% endif %}
+                            {% endfor %}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td class="center">
+                            {% if result.hasMultipleLabels %}<span class="flag-yes">Yes</span>{% else %}<span class="flag-no">No</span>{% endif %}
+                        </td>
+                        <td class="center">
+                            {% if result.potentialChange %}<span class="flag-warn">Yes</span>{% else %}<span class="flag-no">No</span>{% endif %}
+                        </td>
+                    </tr>
+                    <tr class="detail-row">
+                        <td colspan="9">
+                            <details>
+                                <summary>View Details</summary>
+                                <div class="details-content">
+                                    <h4>Label Entries</h4>
+                                    {% if result.labelEntries %}
+                                    {% for entry in result.labelEntries %}
+                                    <div class="entry">
+                                        <p><strong>Label ID:</strong> {{ entry.labelId or 'N/A' }}</p>
+                                        <p><strong>Label Name:</strong> {{ entry.labelName or 'N/A' }}</p>
+                                        <p><strong>Description:</strong> {{ entry.description or 'N/A' }}</p>
+                                        <p><strong>Where it came from:</strong> {{ entry.whereItCameFrom }}</p>
+                                        <p><strong>Parent Labels:</strong> 
+                                            {% if entry.parentLabels and entry.parentLabels|length > 0 %}
+                                                {% for p in entry.parentLabels %}{{ p.labelName or p.labelId }}{% if not loop.last %}, {% endif %}{% endfor %}
+                                            {% else %}None{% endif %}
+                                        </p>
+                                        <p><strong>Previous Label:</strong> {{ entry.previousLabelName or entry.previousLabelId or 'N/A' }}</p>
+                                        <p><strong>Raw Field Value:</strong> <code>{{ entry.rawFieldValue }}</code></p>
+                                    </div>
+                                    {% endfor %}
+                                    {% else %}
+                                    <p>No label entries found.</p>
+                                    {% endif %}
+
+                                    {% if result.potentialChange and result.changeDetails.detected %}
+                                    <h4>Potential Change Details</h4>
+                                    <div class="change-box">
+                                        <p><strong>Evidence:</strong> {{ result.changeDetails.evidence }}</p>
+                                        <p><strong>From:</strong> {{ result.changeDetails.from.labelName or result.changeDetails.from.labelId or 'N/A' }}</p>
+                                        <p><strong>To:</strong> {{ result.changeDetails.to.labelName or result.changeDetails.to.labelId or 'N/A' }}</p>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if result.scanNotes %}
+                                    <h4>Scan Notes</h4>
+                                    <ul>
+                                        {% for note in result.scanNotes %}
+                                        <li>{{ note }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+
+                                    <p class="meta"><strong>Scanned:</strong> {{ result.scannedAt }}</p>
+                                </div>
+                            </details>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% elif not error %}
+        <p class="no-results">No results to display.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

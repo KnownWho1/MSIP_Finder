@@ -1,0 +1,9 @@
+Flask==3.0.3
+Werkzeug==3.0.4
+lxml==5.3.0
+olefile==0.47
+pypdf==4.3.1
+extract-msg==0.52.0
+python-magic-bin==0.4.14
+rich==13.8.1
+zipfile36==0.1.3

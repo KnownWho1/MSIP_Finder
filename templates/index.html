@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSIP Label Scanner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MSIP Label Scanner</h1>
+            <p class="subtitle">Local file scanner - No external connections</p>
+        </header>
+
+        <section class="upload-section">
+            <form action="{{ url_for('scan') }}" method="post" enctype="multipart/form-data">
+                <div class="upload-box">
+                    <p>Drag and drop files here or click to select</p>
+                    <input type="file" name="files" id="files" multiple accept="*/*" required>
+                    <p class="help">Supports individual files and .ZIP archives (recursively scanned)</p>
+                </div>
+                <button type="submit" class="scan-btn">Scan Files</button>
+            </form>
+        </section>
+
+        <section class="info">
+            <h2>About</h2>
+            <ul>
+                <li>Runs locally via <code>python app.py</code> - accessible at http://127.0.0.1:5000</li>
+                <li>Scans embedded sensitivity/MSIP label metadata only</li>
+                <li>Shows Label ID, where it came from, description, parent labels, label name</li>
+                <li>Flags multiple labels and potential label changes</li>
+                <li>Marks files with no label as "no label detected"</li>
+            </ul>
+        </section>
+    </div>
+</body>
+</html>
